@@ -10,9 +10,37 @@ const prefsSchema = z.object({
   budget: z.number().min(0).max(100000),
 });
 
-async function askModel(prompt: string): Promise<string> {
+const str = { type: "string" } as const;
+const num = { type: "number" } as const;
+const PLACES_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["places"],
+  properties: {
+    places: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["name", "category", "description", "whyVisit", "gemScore", "cost", "duration", "lat", "lng", "history", "significance", "fact", "whyMatters", "notice"],
+        properties: {
+          name: str, category: { type: "string", enum: [...INTERESTS] }, description: str, whyVisit: str,
+          gemScore: num, cost: num, duration: num, lat: num, lng: num,
+          history: str, significance: str, fact: str, whyMatters: str, notice: str,
+        },
+      },
+    },
+  },
+};
+
+async function askModel(prompt: string, json = false): Promise<string> {
   const { generateResponse } = await import("@lovable.dev/ai-gateway");
-  const res = await generateResponse({ model: "openai/gpt-6-astra", input: prompt, reasoning: { effort: "low" } });
+  const res = await generateResponse({
+    model: "openai/gpt-6-astra",
+    input: prompt,
+    reasoning: { effort: "low" },
+    ...(json ? { text: { format: { type: "json_schema" as const, name: "places", strict: true, schema: PLACES_SCHEMA } } } : {}),
+  });
   let text = "";
   for (const item of res.output ?? []) {
     if (item.type === "message") {
@@ -28,9 +56,9 @@ export const discoverPlaces = createServerFn({ method: "POST" })
     const fallback = () => ({ places: recommendLocal(DEMO_PLACES, data), source: "demo" as const });
     try {
       const prompt = `You are LocalLens, a local tourism expert. Recommend exactly 5 real, lesser-known (hidden gem) places in or near "${data.location}" for a traveller interested in ${data.interests.join(", ") || "anything local"}, with ${data.hours} hours and a budget of ${data.budget} INR per person total. Avoid the top-3 famous landmarks.
-Return ONLY a JSON array of 5 objects with keys: name, category (one of ${INTERESTS.join("|")}), description (1 sentence), whyVisit (1 sentence), gemScore (0-100, higher = more hidden), cost (INR number), duration (minutes number), lat, lng (numbers), history, significance, fact, whyMatters, notice (each 1-2 sentences).`;
-      const text = await askModel(prompt);
-      const json = text.slice(text.indexOf("["), text.lastIndexOf("]") + 1);
+Return JSON {"places": [...]} with 5 objects with keys: name, category (one of ${INTERESTS.join("|")}), description (1 sentence), whyVisit (1 sentence), gemScore (0-100, higher = more hidden), cost (INR number), duration (minutes number), lat, lng (numbers), history, significance, fact, whyMatters, notice (each 1-2 sentences).`;
+      const text = await askModel(prompt, true);
+      const parsed = JSON.parse(text) as { places?: unknown };
       const raw = z
         .array(
           z.object({
@@ -39,7 +67,7 @@ Return ONLY a JSON array of 5 objects with keys: name, category (one of ${INTERE
             history: z.string(), significance: z.string(), fact: z.string(), whyMatters: z.string(), notice: z.string(),
           }),
         )
-        .parse(JSON.parse(json));
+        .parse(parsed.places);
       if (raw.length === 0) return fallback();
       return {
         source: "ai",
