@@ -14,7 +14,7 @@ export function SiteNav({ overlay = false }: { overlay?: boolean }) {
           <Link to="/explore" className="opacity-80 hover:opacity-100" activeProps={{ className: "opacity-100 text-primary" }}>
             Explore
           </Link>
-          <Link to="/route" className="opacity-80 hover:opacity-100" activeProps={{ className: "opacity-100 text-primary" }}>
+          <Link to="/itinerary" className="opacity-80 hover:opacity-100" activeProps={{ className: "opacity-100 text-primary" }}>
             My Route{route.length > 0 && <span className="ml-1.5 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">{route.length}</span>}
           </Link>
         </div>

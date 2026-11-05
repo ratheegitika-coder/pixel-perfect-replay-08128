@@ -12,7 +12,7 @@ describe("planner", () => {
   });
   it("itinerary starts at 10:00 and respects budget", () => {
     const it = buildItinerary(DEMO_PLACES.slice(0, 3), 8, 100);
-    expect(it.stops[0].start).toBe("10:00");
+    expect(it.stops[0]?.start).toBe("10:00");
     expect(it.totalCost).toBeLessThanOrEqual(100);
     expect(it.skipped.map((p) => p.id)).toContain("paranthe-gali");
   });

@@ -110,7 +110,7 @@ function Explore() {
               </div>
               {store.route.length > 0 && (
                 <Button asChild variant="default" className="rounded-full">
-                  <Link to="/route">Build my route ({store.route.length})</Link>
+                  <Link to="/itinerary">Build my route ({store.route.length})</Link>
                 </Button>
               )}
             </div>
