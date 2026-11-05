@@ -6,7 +6,7 @@ import { LazyMap } from "@/components/LazyMap";
 import { useStore } from "@/lib/store";
 import { buildItinerary } from "@/lib/planner";
 
-export const Route = createFileRoute("/route")({
+export const Route = createFileRoute("")({
   head: () => ({
     meta: [
       { title: "Your smart route — LocalLens AI" },
