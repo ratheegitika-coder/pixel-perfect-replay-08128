@@ -12,7 +12,7 @@ const prefsSchema = z.object({
 
 async function askModel(prompt: string): Promise<string> {
   const { generateResponse } = await import("@lovable.dev/ai-gateway");
-  const res = await generateResponse({ model: "openai/gpt-6-astra", input: prompt });
+  const res = await generateResponse({ model: "openai/gpt-6-astra", input: prompt, reasoning: { effort: "low" } });
   let text = "";
   for (const item of res.output ?? []) {
     if (item.type === "message") {
